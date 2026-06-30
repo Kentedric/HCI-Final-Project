@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beepark – Interactive Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --y50:#fffbeb; --y100:#fef3c7; --y200:#fde68a; --y300:#fcd34d;
+  --y400:#fbbf24; --y500:#f59e0b; --y600:#d97706; --y700:#b45309;
+  --a700:#b45309; --a900:#78350f;
+  --g50:#f0fdf4; --g300:#86efac; --g400:#4ade80; --g500:#22c55e; --g700:#15803d; --g900:#14532d;
+  --r50:#fef2f2; --r200:#fecaca; --r500:#ef4444; --r600:#dc2626; --r900:#7f1d1d;
+  --pu100:#f3e8ff; --pu700:#7e22ce;
+  --bl100:#dbeafe; --bl500:#3b82f6;
+  --or50:#fff7ed; --or400:#fb923c;
+  --gr50:#f9fafb; --gr100:#f3f4f6; --gr200:#e5e7eb; --gr300:#d1d5db;
+  --gr400:#9ca3af; --gr500:#6b7280; --gr700:#374151; --gr900:#111827;
+  --white:#ffffff;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --r:10px; --rl:14px; --rxl:20px; --rfull:9999px;
+  --sh:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shm:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -1px rgba(0,0,0,.06);
+  --shl:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -2px rgba(0,0,0,.05);
+}
+
+body {
+  font-family: var(--font);
+  background: radial-gradient(ellipse at 20% 20%, #1a1a3e 0%, #0d0d1a 60%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px 64px;
+  overflow-x: hidden;
+}
+
+/* ── OUTER SHELL ── */
+.prototype-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 480px;
+}
+
+.proto-title {
+  text-align: center;
+  color: var(--white);
+}
+.proto-title h1 { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+.proto-title p { font-size: 12px; color: #718096; margin-top: 4px; }
+.screen-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(245,158,11,.15); border: 1px solid rgba(245,158,11,.3);
+  border-radius: var(--rfull); padding: 4px 12px;
+  font-size: 11px; font-weight: 600; color: #fbbf24; margin-top: 8px;
+}
+
+/* ── PHONE DEVICE ── */
+.device {
+  width: 375px;
+  height: 812px;
+  border-radius: 44px;
+  background: #0a0a14;
+  box-shadow:
+    0 0 0 2px #1a1a2e,
+    0 0 0 10px #0d0d1a,
+    0 0 0 12px #2a2a42,
+    0 40px 100px rgba(0,0,0,.7),
+    inset 0 0 0 1px rgba(255,255,255,.05);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+/* notch */
+.device::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 28px;
+  background: #0a0a14;
+  border-radius: 0 0 18px 18px;
+  z-index: 100;
+}
+
+/* ── SCREEN CONTAINER ── */
+.screens-container {
+  position: absolute;
+  inset: 0;
+  border-radius: 44px;
+  overflow: hidden;
+}
+
+/* ── INDIVIDUAL SCREEN ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  background: var(--y50);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity .3s ease;
+  border-radius: 44px;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  z-index: 10;
+}
+
+/* ── STATUS BAR ── */
+.sb {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 32px 24px 0;
+  font-size: 12px; font-weight: 700;
+  position: sticky; top: 0; z-index: 50;
+  pointer-events: none;
+}
+.sb.light { color: var(--white); }
+.sb.dark { color: var(--gr900); }
+.sb-icons { display: flex; align-items: center; gap: 5px; }
+
+/* ── COMPONENTS ── */
+.card {
+  background: var(--white);
+  border-radius: var(--rl);
+  border: 1px solid var(--y200);
+  box-shadow: var(--sh);
+  overflow: hidden;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: var(--r); font-family: var(--font); font-weight: 700;
+  cursor: pointer; border: none; font-size: 14px; transition: all .12s;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary {
+  background: var(--y500); color: var(--white);
+  width: 100%; padding: 15px; font-size: 15px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(245,158,11,.35);
+}
+.btn-primary:hover { background: var(--y600); }
+.btn-ghost { background: var(--gr100); color: var(--gr700); padding: 9px 14px; border-radius: var(--r); }
+.btn-outline { background: transparent; border: 1.5px solid var(--y300); color: var(--a700); padding: 9px 14px; }
+.badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: var(--rfull); font-size: 12px; font-weight: 700; }
+.badge-y { background: var(--y500); color: var(--white); }
+.badge-o { border: 1.5px solid var(--y300); color: var(--a700); }
+.badge-g { background: var(--g500); color: var(--white); }
+.badge-r { background: var(--r500); color: var(--white); }
+.sep { height: 1px; background: var(--gr100); }
+.row { display: flex; align-items: center; }
+.row-b { display: flex; align-items: center; justify-content: space-between; }
+.f1 { flex: 1; }
+.back-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--gr100); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border: none; flex-shrink: 0;
+}
+.back-btn:active { background: var(--gr200); }
+.ph-white {
+  background: var(--white); border-bottom: 1px solid var(--y200);
+  padding: 10px 20px 14px; position: sticky; top: 0; z-index: 20;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+
+/* ── SLOTS ── */
+.slot { aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:var(--white); cursor:pointer; transition: transform .1s; }
+.slot:active { transform: scale(.92); }
+.s-a { background: var(--g500); }
+.s-b { background: var(--y500); cursor: not-allowed; }
+.s-o { background: var(--r500); cursor: not-allowed; }
+
+/* ── PAY METHOD ── */
+.pm { display:flex; align-items:center; gap:12px; padding:13px 14px; border-radius:12px; border:1.5px solid var(--gr200); cursor:pointer; transition:all .12s; }
+.pm.sel { border-color:var(--y500); background:var(--y50); }
+.pm:active { transform: scale(.98); }
+.pi { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--white); flex-shrink:0; }
+.rd { width:18px; height:18px; border-radius:50%; border:2px solid var(--gr300); margin-left:auto; display:flex; align-items:center; justify-content:center; }
+.rd.on { border-color:var(--y500); }
+.rd.on::after { content:''; width:8px; height:8px; border-radius:50%; background:var(--y500); }
+
+/* ── PROGRESS ── */
+.prog-t { height:8px; background:var(--gr100); border-radius:var(--rfull); overflow:hidden; }
+.prog-f { height:100%; border-radius:var(--rfull); background:linear-gradient(90deg,var(--y500),var(--y600)); }
+
+/* ── ALERT ── */
+.alert { border-radius:var(--r); padding:11px 14px; display:flex; align-items:flex-start; gap:9px; font-size:12px; line-height:1.5; }
+.alert-g { background:var(--g50); border:1px solid var(--g300); color:var(--g900); }
+.alert-r { background:var(--r50); border:1px solid var(--r200); color:var(--r900); }
+
+/* ── FLOW NAV ── */
+.flow-nav {
+  display: flex; gap: 8px; align-items: center;
+  flex-wrap: wrap; justify-content: center;
+  width: 375px;
+}
+.flow-btn {
+  padding: 7px 12px; border-radius: var(--rfull);
+  font-family: var(--font); font-size: 11px; font-weight: 600;
+  cursor: pointer; border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.07); color: #a0aec0;
+  transition: all .15s;
+}
+.flow-btn:hover { background: rgba(245,158,11,.2); border-color: rgba(245,158,11,.4); color: #fbbf24; }
+.flow-btn.current { background: rgba(245,158,11,.25); border-color: var(--y500); color: #fbbf24; }
+
+/* ── PROGRESS DOTS ── */
+.dots {
+  display: flex; gap: 6px; justify-content: center;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,.2); transition: all .25s;
+}
+.dot.active { width: 20px; background: var(--y500); border-radius: 3px; }
+
+/* ── BEE SVG ── */
+.bee-svg { display:block; }
+
+/* ── MAP ── */
+.map-wrap {
+  height: 190px; border-radius: var(--rl); overflow:hidden; position:relative;
+  background: linear-gradient(135deg,#d1fae5,#a7f3d0);
+}
+.map-grid {
+  position:absolute; inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.4) 1px,transparent 1px);
+  background-size:30px 30px;
+}
+
+/* ── QR ── */
+.qr-wrap { width:160px; height:160px; margin:0 auto; background:var(--white); border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shm); }
+
+/* ── SUCCESS OVERLAY ── */
+.success-ring {
+  width:90px; height:90px; border-radius:50%;
+  background:linear-gradient(135deg,var(--g400),var(--g500));
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto;
+  box-shadow:0 8px 24px rgba(34,197,94,.4);
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+
+/* ── TIMER ANIM ── */
+@keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+.timer-val { animation: timerPulse 1s ease-in-out infinite; }
+
+/* ── SCAN LINE ── */
+@keyframes scanLine { 0%{top:10%} 100%{top:90%} }
+.scan-line {
+  position:absolute; left:10%; right:10%; height:2px;
+  background:linear-gradient(90deg,transparent,var(--y500),transparent);
+  animation: scanLine 2s ease-in-out infinite alternate;
+  border-radius:2px;
+}
+</style>
+</head>
+<body>
+
+<div class="prototype-shell">
+
+  <!-- Title -->
+  <div class="proto-title">
+    <h1>🐝 Beepark Prototype</h1>
+    <p>Interactive Clickable Prototype · Universitas Binus Anggrek</p>
+    <div class="screen-badge">
+      <span id="screenName">01 · Login</span>
+    </div>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="dots" id="dots"></div>
+
+  <!-- Device -->
+  <div class="device">
+    <div class="screens-container" id="screensContainer">
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 1: LOGIN                     -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen active" id="s-login" style="background:linear-gradient(180deg,#fffbeb 0%,#fef3c7 100%);">
+        <div class="sb dark"><span>9:41</span><div class="sb-icons">
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="2" width="3" height="9" rx="1"/><rect x="4.5" y="1" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="24" height="12" viewBox="0 0 24 12" fill="currentColor"><rect x="0" y="1" width="20" height="10" rx="3" opacity=".35"/><rect x="0" y="1" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1"/><rect x="1.5" y="2.5" width="13" height="7" rx="1.5"/><path d="M21 4v4c1-.5 1-3.5 0-4z"/></svg>
+        </div></div>
+
+        <div style="padding:0 24px 32px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:720px;">
+          <!-- Logo -->
+          <div style="width:96px;height:96px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 8px 28px rgba(245,158,11,.4);">
+            <svg class="bee-svg" viewBox="0 0 100 100" fill="none" width="76" height="76">
+              <ellipse cx="50" cy="55" rx="22" ry="28" fill="#FFC107"/>
+              <rect x="28" y="45" width="44" height="6" rx="3" fill="#1F2937"/>
+              <rect x="28" y="58" width="44" height="6" rx="3" fill="#1F2937"/>
+              <rect x="28" y="71" width="44" height="6" rx="3" fill="#1F2937"/>
+              <circle cx="50" cy="32" r="14" fill="#FFC107"/>
+              <circle cx="44" cy="30" r="3" fill="#1F2937"/>
+              <circle cx="56" cy="30" r="3" fill="#1F2937"/>
+              <path d="M42 20Q38 12 35 8" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              <path d="M58 20Q62 12 65 8" stroke="#1F2937" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+              <circle cx="35" cy="8" r="2.5" fill="#1F2937"/>
+              <circle cx="65" cy="8" r="2.5" fill="#1F2937"/>
+              <ellipse cx="32" cy="50" rx="12" ry="20" fill="white" opacity=".7" transform="rotate(-25 32 50)"/>
+              <ellipse cx="68" cy="50" rx="12" ry="20" fill="white" opacity=".7" transform="rotate(25 68 50)"/>
+              <path d="M50 83L50 92" stroke="#1F2937" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div style="font-size:28px;font-weight:800;color:#78350f;margin-bottom:4px;">Beepark</div>
+          <div style="font-size:12px;color:#b45309;margin-bottom:28px;text-align:center;">Sistem Parkir Pintar Universitas Binus Anggrek</div>
+
+          <div class="card" style="width:100%;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.1);">
+            <div style="padding:22px 20px 24px;">
+              <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px;">Tipe Kendaraan</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;" id="vehicleToggle">
+                <button onclick="selectVehicle('car',this)" class="btn" id="carBtn" style="flex-direction:column;gap:6px;height:68px;background:#f59e0b;color:white;border-radius:12px;border:none;box-shadow:0 4px 12px rgba(245,158,11,.3);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/><path d="M15 5H0"/></svg>
+                  <span style="font-size:13px;font-weight:700;">Mobil</span>
+                </button>
+                <button onclick="selectVehicle('motorcycle',this)" class="btn" id="motoBtn" style="flex-direction:column;gap:6px;height:68px;background:transparent;color:#b45309;border-radius:12px;border:1.5px solid #fcd34d;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><path d="M15 6h-4L9 17H2"/></svg>
+                  <span style="font-size:13px;font-weight:600;">Motor</span>
+                </button>
+              </div>
+              <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">Nomor Plat Kendaraan</div>
+              <div style="display:flex;align-items:center;justify-content:center;background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:14px;font-size:18px;font-weight:800;letter-spacing:5px;color:#78350f;margin-bottom:18px;">B 1234 XYZ</div>
+              <button class="btn btn-primary" onclick="goTo('s-home')">Masuk / Daftar</button>
+              <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:12px;">Dengan mendaftar, Anda menyetujui syarat dan ketentuan Beepark</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 2: HOME                      -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-home">
+        <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding-bottom:28px;">
+          <div class="sb light" style="padding-bottom:14px;"><span>9:41</span><div class="sb-icons">
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="white"><rect x="0" y="2" width="3" height="9" rx="1"/><rect x="4.5" y="1" width="3" height="10" rx="1"/><rect x="9" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="24" height="12" viewBox="0 0 24 12" fill="white"><rect x="0" y="1" width="20" height="10" rx="3" opacity=".5"/><rect x="1.5" y="2.5" width="14" height="7" rx="1.5"/></svg>
+          </div></div>
+          <div style="padding:0 20px;">
+            <div class="row-b" style="margin-bottom:16px;">
+              <div class="row" style="gap:12px;">
+                <div style="background:rgba(255,255,255,.2);border-radius:14px;padding:8px;">
+                  <svg viewBox="0 0 100 100" fill="none" width="36" height="36">
+                    <ellipse cx="50" cy="55" rx="22" ry="28" fill="#FFC107"/>
+                    <rect x="28" y="45" width="44" height="6" rx="3" fill="#1F2937"/>
+                    <rect x="28" y="58" width="44" height="6" rx="3" fill="#1F2937"/>
+                    <circle cx="50" cy="32" r="14" fill="#FFC107"/>
+                    <circle cx="44" cy="30" r="3" fill="#1F2937"/>
+                    <circle cx="56" cy="30" r="3" fill="#1F2937"/>
+                    <ellipse cx="32" cy="50" rx="12" ry="20" fill="white" opacity=".6" transform="rotate(-25 32 50)"/>
+                    <ellipse cx="68" cy="50" rx="12" ry="20" fill="white" opacity=".6" transform="rotate(25 68 50)"/>
+                  </svg>
+                </div>
+                <div>
+                  <div style="font-size:20px;font-weight:800;color:white;">Beepark</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.8);">Universitas Binus Anggrek</div>
+                </div>
+              </div>
+              <div style="background:rgba(255,255,255,.2);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+              </div>
+            </div>
+            <div class="card" style="border-color:rgba(255,255,255,.5);">
+              <div class="row-b" style="padding:14px 16px;">
+                <div>
+                  <div style="font-size:11px;color:#b45309;margin-bottom:3px;">Kendaraan Terdaftar</div>
+                  <div style="font-size:18px;font-weight:800;color:#111827;letter-spacing:2px;">B 1234 XYZ</div>
+                  <div style="font-size:11px;color:#b45309;margin-top:2px;">Mobil</div>
+                </div>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/><path d="M15 5H0"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:0 16px 24px;margin-top:-14px;background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+          <!-- Status -->
+          <div class="card" style="margin-bottom:14px;border-color:#86efac;background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+            <div class="row" style="gap:12px;padding:14px 16px;">
+              <div style="background:linear-gradient(135deg,#4ade80,#22c55e);border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(34,197,94,.3);flex-shrink:0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+              </div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:#111827;">Siap Parkir</div>
+                <div style="font-size:11px;color:#15803d;">54 slot tersedia</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:11px;font-weight:700;color:#b45309;padding:0 4px;margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;">Menu Utama</div>
+
+          <div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="goTo('s-map')">
+            <div class="row" style="gap:14px;padding:14px 16px;">
+              <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+              </div>
+              <div class="f1">
+                <div style="font-size:14px;font-weight:700;color:#111827;">Denah Parkir</div>
+                <div style="font-size:12px;color:#b45309;">Lihat ketersediaan slot real-time</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:10px;cursor:pointer;" onclick="goTo('s-scan')">
+            <div class="row" style="gap:14px;padding:14px 16px;">
+              <div style="background:var(--pu100);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7e22ce" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zm7 0h3v3h-3zM7 14h3v3H7zm4-4h2v2h-2zm4 4h3v3h-3zm-4 0h2"/></svg>
+              </div>
+              <div class="f1">
+                <div style="font-size:14px;font-weight:700;color:#111827;">Scan QR Gerbang</div>
+                <div style="font-size:12px;color:#b45309;">Masuk/keluar area parkir</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:14px;cursor:pointer;" onclick="goTo('s-find')">
+            <div class="row" style="gap:14px;padding:14px 16px;">
+              <div style="background:#f0fdf4;border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              </div>
+              <div class="f1">
+                <div style="font-size:14px;font-weight:700;color:#111827;">Find My Vehicle</div>
+                <div style="font-size:12px;color:#b45309;">Cari lokasi kendaraan Anda</div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+
+          <!-- Tarif -->
+          <div class="card">
+            <div class="row" style="gap:8px;padding:14px 16px 10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              <div style="font-size:13px;font-weight:700;color:#111827;">Informasi Tarif</div>
+            </div>
+            <div class="sep"></div>
+            <div style="padding:12px 16px 14px;display:flex;flex-direction:column;gap:9px;">
+              <div class="row-b"><span style="font-size:12px;">Deposit Booking Mobil</span><span class="badge badge-y">Rp 5.000</span></div>
+              <div class="row-b"><span style="font-size:12px;">Deposit Booking Motor</span><span class="badge badge-y">Rp 2.000</span></div>
+              <div class="row-b"><span style="font-size:12px;">Durasi Hold Booking</span><span class="badge badge-o">5 Menit</span></div>
+              <div class="row-b"><span style="font-size:12px;">Radius Booking</span><span class="badge badge-o">1 KM</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 3: PARKING MAP               -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-map" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;margin-bottom:12px;">
+            <button class="back-btn" onclick="goTo('s-home')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Denah Parkir</div><div style="font-size:11px;color:#b45309;">Real-time availability</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;">
+            <div class="row" style="gap:7px;"><div style="width:13px;height:13px;background:#22c55e;border-radius:3px;"></div><span style="font-size:12px;"><strong>22</strong> <span style="color:#6b7280;">Kosong</span></span></div>
+            <div class="row" style="gap:7px;"><div style="width:13px;height:13px;background:#f59e0b;border-radius:3px;"></div><span style="font-size:12px;"><strong>8</strong> <span style="color:#6b7280;">Booked</span></span></div>
+            <div class="row" style="gap:7px;"><div style="width:13px;height:13px;background:#ef4444;border-radius:3px;"></div><span style="font-size:12px;"><strong>50</strong> <span style="color:#6b7280;">Terisi</span></span></div>
+          </div>
+          <div style="display:flex;gap:7px;">
+            <button class="btn btn-primary btn-sm" style="width:auto;padding:7px 12px;font-size:11px;border-radius:8px;">Semua</button>
+            <button class="btn btn-outline" style="padding:7px 12px;font-size:11px;border-radius:8px;">Mobil</button>
+            <button class="btn btn-outline" style="padding:7px 12px;font-size:11px;border-radius:8px;">Motor</button>
+          </div>
+        </div>
+        <div style="padding:14px 14px 28px;display:flex;flex-direction:column;gap:14px;">
+          <div class="card">
+            <div class="row" style="gap:8px;padding:13px 16px 10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></svg>
+              <div style="font-size:13px;font-weight:700;color:#111827;">Area Mobil</div>
+            </div>
+            <div style="padding:0 14px 14px;display:grid;grid-template-columns:repeat(5,1fr);gap:7px;">
+              <div class="slot s-a" onclick="goTo('s-booking')">A-1</div><div class="slot s-a" onclick="goTo('s-booking')">A-2</div><div class="slot s-o">A-3</div><div class="slot s-a" onclick="goTo('s-booking')">A-4</div><div class="slot s-b">A-5</div>
+              <div class="slot s-o">A-6</div><div class="slot s-a" onclick="goTo('s-booking')">A-7</div><div class="slot s-o">A-8</div><div class="slot s-a" onclick="goTo('s-booking')">A-9</div><div class="slot s-o">A-10</div>
+              <div class="slot s-b">A-11</div><div class="slot s-o">A-12</div><div class="slot s-a" onclick="goTo('s-booking')">A-13</div><div class="slot s-o">A-14</div><div class="slot s-a" style="background:#16a34a;box-shadow:0 0 0 2px white,0 0 0 4px #22c55e;" onclick="goTo('s-booking')">A-15</div>
+              <div class="slot s-o">A-16</div><div class="slot s-a" onclick="goTo('s-booking')">A-17</div><div class="slot s-b">A-18</div><div class="slot s-o">A-19</div><div class="slot s-a" onclick="goTo('s-booking')">A-20</div>
+              <div class="slot s-a" onclick="goTo('s-booking')">A-21</div><div class="slot s-o">A-22</div><div class="slot s-a" onclick="goTo('s-booking')">A-23</div><div class="slot s-b">A-24</div><div class="slot s-o">A-25</div>
+              <div class="slot s-o">A-26</div><div class="slot s-a" onclick="goTo('s-booking')">A-27</div><div class="slot s-o">A-28</div><div class="slot s-a" onclick="goTo('s-booking')">A-29</div><div class="slot s-o">A-30</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="row" style="gap:8px;padding:13px 16px 10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><path d="M15 6h-4L9 17H2"/></svg>
+              <div style="font-size:13px;font-weight:700;color:#111827;">Area Motor</div>
+            </div>
+            <div style="padding:0 14px 14px;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;">
+              <div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-1</div><div class="slot s-o" style="font-size:8px;">M-2</div><div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-3</div><div class="slot s-b" style="font-size:8px;">M-4</div><div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-5</div><div class="slot s-o" style="font-size:8px;">M-6</div>
+              <div class="slot s-o" style="font-size:8px;">M-7</div><div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-8</div><div class="slot s-o" style="font-size:8px;">M-9</div><div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-10</div><div class="slot s-b" style="font-size:8px;">M-11</div><div class="slot s-o" style="font-size:8px;">M-12</div>
+              <div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-13</div><div class="slot s-o" style="font-size:8px;">M-14</div><div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-15</div><div class="slot s-o" style="font-size:8px;">M-16</div><div class="slot s-a" style="font-size:8px;" onclick="goTo('s-booking')">M-17</div><div class="slot s-b" style="font-size:8px;">M-18</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 4: BOOKING                   -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-booking" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;">
+            <button class="back-btn" onclick="goTo('s-map')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Booking Slot Parkir</div><div style="font-size:11px;color:#b45309;">Konfirmasi pemesanan</div></div>
+          </div>
+        </div>
+        <div style="padding:14px 14px 24px;display:flex;flex-direction:column;gap:11px;">
+          <div class="alert alert-g">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            Anda berada dalam radius booking. Silakan lanjutkan pemesanan.
+          </div>
+          <div class="card" style="border:2px solid #fcd34d;">
+            <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:18px 20px;" class="row-b">
+              <div><div style="font-size:28px;font-weight:800;color:#111827;">A-15</div><div style="font-size:12px;color:#b45309;">Slot Parkir Tersedia</div></div>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.5"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></svg>
+            </div>
+            <div style="padding:14px 20px;display:flex;flex-direction:column;gap:11px;">
+              <div class="row" style="gap:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><div><div style="font-size:13px;font-weight:600;color:#111827;">Lokasi</div><div style="font-size:11px;color:#6b7280;">Lantai 1, Zona A</div></div></div>
+              <div class="row" style="gap:10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><div><div style="font-size:13px;font-weight:600;color:#111827;">Durasi Hold</div><div style="font-size:11px;color:#6b7280;">5 menit setelah pembayaran deposit</div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="row" style="gap:8px;padding:13px 16px 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><div style="font-size:13px;font-weight:700;color:#111827;">Informasi Deposit</div></div>
+            <div class="sep"></div>
+            <div style="padding:12px 16px 14px;">
+              <div class="row-b" style="margin-bottom:10px;"><span style="font-size:12px;">Deposit Booking</span><span class="badge badge-y" style="font-size:13px;">Rp 5.000</span></div>
+              <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px;"><div style="font-size:11px;color:#78350f;line-height:1.5;"><strong>Info:</strong> Deposit dikembalikan jika Anda tiba dalam 5 menit.</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="padding:12px 16px 10px;font-size:12px;font-weight:700;color:#111827;">Syarat & Ketentuan</div>
+            <div class="sep"></div>
+            <ul style="padding:10px 16px 14px 28px;font-size:11px;color:#6b7280;line-height:1.6;">
+              <li>Slot di-hold 5 menit setelah pembayaran deposit</li>
+              <li>Harus scan QR di gerbang dalam waktu 5 menit</li>
+              <li>Deposit dikembalikan otomatis saat masuk</li>
+              <li>Deposit hangus jika tidak masuk dalam 5 menit</li>
+            </ul>
+          </div>
+          <button class="btn btn-primary" onclick="goTo('s-deposit')">Bayar Deposit Rp 5.000</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 5: DEPOSIT PAYMENT           -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-deposit" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;">
+            <button class="back-btn" onclick="goTo('s-booking')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Pembayaran Deposit</div><div style="font-size:11px;color:#b45309;">Pilih metode pembayaran</div></div>
+          </div>
+        </div>
+        <div style="padding:14px 14px 24px;display:flex;flex-direction:column;gap:11px;">
+          <div class="card" style="border:2px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,#fef3c7);">
+            <div style="padding:20px;text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#b45309;margin-bottom:6px;">Total Deposit</div>
+              <div style="font-size:38px;font-weight:800;color:#78350f;">Rp 5.000</div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Slot A-15 · Mobil · B 1234 XYZ</div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#b45309;letter-spacing:.5px;text-transform:uppercase;">Metode Pembayaran</div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="payMethods">
+            <div class="pm sel" onclick="selectPay(this)"><div class="pi" style="background:#00aed9;">Go</div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">GoPay</div><div style="font-size:11px;color:#9ca3af;">Saldo: Rp 150.000</div></div><div class="rd on"></div></div>
+            <div class="pm" onclick="selectPay(this)"><div class="pi" style="background:#4b2d8c;">OVO</div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">OVO</div></div><div class="rd"></div></div>
+            <div class="pm" onclick="selectPay(this)"><div class="pi" style="background:#108fe7;">D</div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">DANA</div></div><div class="rd"></div></div>
+            <div class="pm" onclick="selectPay(this)"><div class="pi" style="background:#374151;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">Transfer Bank</div></div><div class="rd"></div></div>
+          </div>
+          <button class="btn btn-primary" onclick="goTo('s-qr')">Bayar Sekarang</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 6: BOOKING QR                -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-qr" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding-bottom:28px;">
+          <div class="sb light" style="padding-bottom:12px;"><span>9:41</span></div>
+          <div style="text-align:center;padding:0 20px 4px;">
+            <div style="font-size:20px;font-weight:800;color:white;">Booking Berhasil! 🎉</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.8);margin-top:4px;">Scan QR ini di gerbang parkir</div>
+          </div>
+        </div>
+        <div style="padding:0 14px 24px;margin-top:-14px;background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+          <div class="card" style="margin-bottom:12px;border:2px solid #fcd34d;">
+            <div style="padding:14px 16px;">
+              <div class="row-b" style="margin-bottom:10px;">
+                <div class="row" style="gap:7px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span style="font-size:12px;font-weight:600;color:#b45309;">Waktu Tersisa</span></div>
+                <span class="timer-val" id="timerDisplay" style="font-size:22px;font-weight:800;color:#f59e0b;font-variant-numeric:tabular-nums;">4:32</span>
+              </div>
+              <div class="prog-t"><div class="prog-f" style="width:90%;transition:width 1s linear;" id="timerBar"></div></div>
+              <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px;">Slot A-15 akan dilepas jika QR tidak di-scan</div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:12px;text-align:center;">
+            <div style="padding:20px 16px;">
+              <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:14px;">Tunjukkan QR Ini ke Petugas</div>
+              <div class="qr-wrap">
+                <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+                  <rect x="8" y="8" width="38" height="38" rx="4" fill="#1F2937"/>
+                  <rect x="13" y="13" width="28" height="28" rx="2" fill="white"/>
+                  <rect x="17" y="17" width="20" height="20" rx="1.5" fill="#1F2937"/>
+                  <rect x="94" y="8" width="38" height="38" rx="4" fill="#1F2937"/>
+                  <rect x="99" y="13" width="28" height="28" rx="2" fill="white"/>
+                  <rect x="103" y="17" width="20" height="20" rx="1.5" fill="#1F2937"/>
+                  <rect x="8" y="94" width="38" height="38" rx="4" fill="#1F2937"/>
+                  <rect x="13" y="99" width="28" height="28" rx="2" fill="white"/>
+                  <rect x="17" y="103" width="20" height="20" rx="1.5" fill="#1F2937"/>
+                  <rect x="55" y="8" width="10" height="10" rx="1" fill="#1F2937"/><rect x="70" y="8" width="10" height="10" rx="1" fill="#1F2937"/><rect x="55" y="23" width="10" height="10" rx="1" fill="#1F2937"/>
+                  <rect x="55" y="55" width="10" height="10" rx="1" fill="#1F2937"/><rect x="70" y="55" width="10" height="10" rx="1" fill="#1F2937"/><rect x="85" y="55" width="10" height="10" rx="1" fill="#1F2937"/>
+                  <rect x="55" y="70" width="10" height="10" rx="1" fill="#f59e0b"/><rect x="70" y="70" width="10" height="10" rx="1" fill="#f59e0b"/>
+                  <rect x="85" y="70" width="10" height="10" rx="1" fill="#1F2937"/><rect x="94" y="55" width="10" height="10" rx="1" fill="#1F2937"/>
+                  <rect x="55" y="85" width="10" height="10" rx="1" fill="#1F2937"/><rect x="70" y="85" width="10" height="10" rx="1" fill="#1F2937"/>
+                  <rect x="94" y="85" width="10" height="10" rx="1" fill="#1F2937"/><rect x="109" y="55" width="10" height="10" rx="1" fill="#1F2937"/>
+                  <rect x="55" y="94" width="10" height="10" rx="1" fill="#1F2937"/><rect x="55" y="109" width="10" height="10" rx="1" fill="#f59e0b"/><rect x="70" y="109" width="10" height="10" rx="1" fill="#1F2937"/>
+                  <rect x="85" y="94" width="10" height="10" rx="1" fill="#1F2937"/><rect x="55" y="124" width="10" height="10" rx="1" fill="#1F2937"/>
+                </svg>
+              </div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:10px;">Slot: <strong style="color:#374151;">A-15</strong> · Plat: <strong style="color:#374151;">B 1234 XYZ</strong></div>
+            </div>
+          </div>
+          <button class="btn" style="background:white;border:1.5px solid #fcd34d;color:#b45309;width:100%;padding:13px;border-radius:14px;font-size:14px;font-weight:700;" onclick="goTo('s-active')">
+            Simulasi Masuk Parkir →
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 7: SCAN PAGE                 -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-scan" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;">
+            <button class="back-btn" onclick="goTo('s-home')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Scan QR Gerbang</div><div style="font-size:11px;color:#b45309;">Masuk atau keluar area parkir</div></div>
+          </div>
+        </div>
+        <div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:18px;">
+          <div style="background:#f3f4f6;border-radius:12px;padding:4px;display:flex;gap:4px;width:100%;">
+            <button style="flex:1;padding:10px;border-radius:9px;background:white;border:none;font-family:var(--font);font-weight:700;font-size:13px;color:#374151;box-shadow:0 1px 3px rgba(0,0,0,.08);cursor:pointer;">Masuk</button>
+            <button style="flex:1;padding:10px;border-radius:9px;background:transparent;border:none;font-family:var(--font);font-weight:600;font-size:13px;color:#9ca3af;cursor:pointer;">Keluar</button>
+          </div>
+          <div style="background:rgba(245,158,11,.07);border-radius:20px;padding:28px 20px;width:100%;text-align:center;">
+            <div style="width:200px;height:200px;border:2px dashed #fcd34d;border-radius:16px;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              <div style="position:absolute;top:0;left:0;width:28px;height:28px;border-top:4px solid #f59e0b;border-left:4px solid #f59e0b;border-radius:6px 0 0 0;"></div>
+              <div style="position:absolute;top:0;right:0;width:28px;height:28px;border-top:4px solid #f59e0b;border-right:4px solid #f59e0b;border-radius:0 6px 0 0;"></div>
+              <div style="position:absolute;bottom:0;left:0;width:28px;height:28px;border-bottom:4px solid #f59e0b;border-left:4px solid #f59e0b;border-radius:0 0 0 6px;"></div>
+              <div style="position:absolute;bottom:0;right:0;width:28px;height:28px;border-bottom:4px solid #f59e0b;border-right:4px solid #f59e0b;border-radius:0 0 6px 0;"></div>
+              <div class="scan-line"></div>
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity=".35"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zm7 0h3v3h-3zM7 14h3v3H7zm4-4h2v2h-2zm4 4h3v3h-3z"/></svg>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px;">Arahkan kamera ke QR Code</div>
+            <div style="font-size:11px;color:#9ca3af;">QR akan terdeteksi secara otomatis</div>
+          </div>
+          <div style="width:100%;display:flex;align-items:center;gap:10px;">
+            <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+            <div style="font-size:11px;color:#9ca3af;font-weight:600;">atau masukkan kode manual</div>
+            <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+          </div>
+          <div style="display:flex;gap:8px;width:100%;">
+            <input placeholder="Masukkan kode QR" style="flex:1;padding:12px 14px;border:1.5px solid #fcd34d;border-radius:10px;font-family:var(--font);font-size:13px;background:white;outline:none;color:#374151;"/>
+            <button class="btn btn-primary" style="width:auto;padding:12px 18px;border-radius:10px;" onclick="goTo('s-active')">→</button>
+          </div>
+          <div class="card" style="width:100%;">
+            <div style="padding:12px 14px;display:flex;flex-direction:column;gap:7px;">
+              <div class="row" style="gap:8px;"><div style="width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div><div style="font-size:11px;color:#6b7280;">Booking aktif akan otomatis terdeteksi</div></div>
+              <div class="row" style="gap:8px;"><div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></div><div style="font-size:11px;color:#6b7280;">Deposit dikembalikan setelah scan masuk</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 8: ACTIVE PARKING            -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-active" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;">
+            <button class="back-btn" onclick="goTo('s-home')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Parkir Aktif</div><div style="font-size:11px;color:#b45309;">Sesi parkir berjalan</div></div>
+          </div>
+        </div>
+        <div style="padding:14px 14px 24px;display:flex;flex-direction:column;gap:11px;">
+          <div class="card" style="border:2px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,white);text-align:center;">
+            <div style="padding:20px;">
+              <div style="font-size:11px;font-weight:700;color:#b45309;margin-bottom:6px;">Durasi Parkir</div>
+              <div id="durationDisplay" style="font-size:44px;font-weight:800;color:#f59e0b;font-variant-numeric:tabular-nums;letter-spacing:-1px;">02:15:34</div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:4px;">Mulai: 07:25 WIB</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div class="card"><div style="padding:13px 14px;"><div style="font-size:11px;color:#b45309;margin-bottom:3px;">Slot</div><div style="font-size:20px;font-weight:800;color:#111827;">A-15</div><div style="font-size:11px;color:#9ca3af;">Lantai 1, Zona A</div></div></div>
+            <div class="card"><div style="padding:13px 14px;"><div style="font-size:11px;color:#b45309;margin-bottom:3px;">Estimasi Biaya</div><div style="font-size:18px;font-weight:800;color:#111827;">Rp 9.000</div><div style="font-size:11px;color:#9ca3af;">3 jam × Rp 3.000</div></div></div>
+          </div>
+          <div class="card">
+            <div class="row" style="gap:12px;padding:14px 16px;">
+              <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></svg></div>
+              <div><div style="font-size:14px;font-weight:700;color:#111827;letter-spacing:2px;">B 1234 XYZ</div><div style="font-size:11px;color:#b45309;">Mobil · Terdaftar</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="row" style="gap:8px;padding:13px 16px 10px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><div style="font-size:12px;font-weight:700;color:#111827;">Tarif Parkir</div></div>
+            <div class="sep"></div>
+            <div style="padding:10px 16px 13px;display:flex;flex-direction:column;gap:8px;">
+              <div class="row-b"><span style="font-size:12px;">Per jam (Mobil)</span><span class="badge badge-o">Rp 3.000/jam</span></div>
+              <div class="row-b"><span style="font-size:12px;">Minimum</span><span class="badge badge-o">1 jam</span></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="goTo('s-payment')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Bayar Parkir
+          </button>
+          <button class="btn" style="background:white;border:1.5px solid #fcd34d;color:#b45309;width:100%;padding:13px;border-radius:14px;font-size:13px;font-weight:700;" onclick="goTo('s-find')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            Find My Vehicle
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 9: PARKING PAYMENT           -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-payment" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;">
+            <button class="back-btn" onclick="goTo('s-active')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Pembayaran Parkir</div><div style="font-size:11px;color:#b45309;">Selesaikan pembayaran untuk keluar</div></div>
+          </div>
+        </div>
+        <div style="padding:14px 14px 24px;display:flex;flex-direction:column;gap:11px;">
+          <div class="card" style="border:2px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,white);">
+            <div style="padding:18px 16px;">
+              <div class="row-b" style="margin-bottom:12px;"><div><div style="font-size:11px;color:#b45309;margin-bottom:2px;">Slot A-15 · B 1234 XYZ</div><div style="font-size:11px;color:#9ca3af;">02:15:34 · Mulai 07:25 WIB</div></div><span class="badge badge-y">Mobil</span></div>
+              <div style="background:#fffbeb;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+                <div class="row-b"><span style="font-size:12px;color:#6b7280;">Biaya Parkir (3 jam)</span><span style="font-size:12px;font-weight:600;color:#111827;">Rp 9.000</span></div>
+                <div class="row-b"><span style="font-size:12px;color:#6b7280;">Pengembalian Deposit</span><span style="font-size:12px;font-weight:600;color:#22c55e;">- Rp 5.000</span></div>
+                <div style="height:1px;background:#fde68a;"></div>
+                <div class="row-b"><span style="font-size:13px;font-weight:700;color:#111827;">Total Bayar</span><span style="font-size:18px;font-weight:800;color:#f59e0b;">Rp 4.000</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#b45309;letter-spacing:.5px;text-transform:uppercase;">Metode Pembayaran</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="pm sel"><div class="pi" style="background:#00aed9;">Go</div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">GoPay</div><div style="font-size:11px;color:#9ca3af;">Saldo: Rp 150.000</div></div><div class="rd on"></div></div>
+            <div class="pm"><div class="pi" style="background:#4b2d8c;">OVO</div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">OVO</div></div><div class="rd"></div></div>
+            <div class="pm"><div class="pi" style="background:#108fe7;">D</div><div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;">DANA</div></div><div class="rd"></div></div>
+          </div>
+          <button class="btn btn-primary" onclick="goTo('s-success')">Bayar Rp 4.000</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 10: SUCCESS                  -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-success" style="background:linear-gradient(180deg,#f0fdf4,#dcfce7 100%);display:flex;align-items:center;justify-content:center;">
+        <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;">
+          <div class="success-ring">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <div><div style="font-size:24px;font-weight:800;color:#14532d;margin-bottom:6px;">Pembayaran Berhasil!</div><div style="font-size:13px;color:#15803d;line-height:1.5;">Terima kasih telah menggunakan Beepark.<br>Silakan scan QR untuk keluar.</div></div>
+          <div class="card" style="width:100%;border-color:#86efac;text-align:left;">
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+              <div class="row-b"><span style="font-size:12px;color:#6b7280;">Slot</span><span style="font-size:12px;font-weight:700;color:#111827;">A-15</span></div>
+              <div class="row-b"><span style="font-size:12px;color:#6b7280;">Plat</span><span style="font-size:12px;font-weight:700;color:#111827;">B 1234 XYZ</span></div>
+              <div class="row-b"><span style="font-size:12px;color:#6b7280;">Durasi</span><span style="font-size:12px;font-weight:700;color:#111827;">02:15:34</span></div>
+              <div style="height:1px;background:#e5e7eb;"></div>
+              <div class="row-b"><span style="font-size:13px;font-weight:700;color:#111827;">Total Dibayar</span><span style="font-size:14px;font-weight:800;color:#22c55e;">Rp 4.000</span></div>
+            </div>
+          </div>
+          <div class="card" style="width:100%;border-color:#86efac;text-align:center;">
+            <div style="padding:14px 16px;">
+              <div style="font-size:12px;font-weight:600;color:#15803d;margin-bottom:10px;">QR Keluar Parkir</div>
+              <div style="width:100px;height:100px;background:white;border-radius:10px;margin:0 auto;display:flex;align-items:center;justify-content:center;border:1px solid #86efac;">
+                <svg width="80" height="80" viewBox="0 0 140 140" fill="none">
+                  <rect x="8" y="8" width="38" height="38" rx="4" fill="#1F2937"/><rect x="13" y="13" width="28" height="28" rx="2" fill="white"/><rect x="17" y="17" width="20" height="20" rx="1.5" fill="#22c55e"/>
+                  <rect x="94" y="8" width="38" height="38" rx="4" fill="#1F2937"/><rect x="99" y="13" width="28" height="28" rx="2" fill="white"/><rect x="103" y="17" width="20" height="20" rx="1.5" fill="#22c55e"/>
+                  <rect x="8" y="94" width="38" height="38" rx="4" fill="#1F2937"/><rect x="13" y="99" width="28" height="28" rx="2" fill="white"/><rect x="17" y="103" width="20" height="20" rx="1.5" fill="#22c55e"/>
+                  <rect x="55" y="8" width="10" height="10" rx="1" fill="#22c55e"/><rect x="70" y="8" width="10" height="10" rx="1" fill="#1F2937"/><rect x="55" y="55" width="10" height="10" rx="1" fill="#1F2937"/><rect x="70" y="70" width="10" height="10" rx="1" fill="#22c55e"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="background:#22c55e;box-shadow:0 4px 14px rgba(34,197,94,.35);" onclick="goTo('s-home')">
+            Kembali ke Home
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- SCREEN 11: FIND VEHICLE             -->
+      <!-- ═══════════════════════════════════ -->
+      <div class="screen" id="s-find" style="background:linear-gradient(180deg,#fffbeb,#fef3c7 100%);">
+        <div class="ph-white">
+          <div class="sb dark" style="padding:32px 0 10px;"><span>9:41</span></div>
+          <div class="row" style="gap:10px;">
+            <button class="back-btn" onclick="goTo('s-home')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg></button>
+            <div><div style="font-size:16px;font-weight:700;color:#111827;">Find My Vehicle</div><div style="font-size:11px;color:#b45309;">Temukan lokasi kendaraan Anda</div></div>
+          </div>
+        </div>
+        <div style="padding:14px 14px 24px;display:flex;flex-direction:column;gap:11px;">
+          <div class="map-wrap">
+            <div class="map-grid"></div>
+            <svg width="100%" height="100%" viewBox="0 0 347 190" style="position:absolute;inset:0;" fill="none">
+              <rect x="20" y="20" width="140" height="150" rx="4" fill="rgba(255,255,255,.5)" stroke="rgba(255,255,255,.8)" stroke-width="1.5"/>
+              <text x="90" y="105" font-family="Plus Jakarta Sans,sans-serif" font-size="11" font-weight="700" fill="rgba(0,0,0,.35)" text-anchor="middle">ZONA A</text>
+              <rect x="30" y="32" width="20" height="28" rx="2" fill="rgba(34,197,94,.3)" stroke="rgba(34,197,94,.6)" stroke-width="1"/>
+              <rect x="55" y="32" width="20" height="28" rx="2" fill="rgba(239,68,68,.3)" stroke="rgba(239,68,68,.6)" stroke-width="1"/>
+              <rect x="80" y="32" width="20" height="28" rx="2" fill="rgba(239,68,68,.3)" stroke="rgba(239,68,68,.6)" stroke-width="1"/>
+              <rect x="105" y="32" width="20" height="28" rx="2" fill="rgba(245,158,11,.45)" stroke="rgba(245,158,11,.9)" stroke-width="2"/>
+              <rect x="130" y="32" width="20" height="28" rx="2" fill="rgba(239,68,68,.3)" stroke="rgba(239,68,68,.6)" stroke-width="1"/>
+              <text x="115" y="50" font-family="Plus Jakarta Sans,sans-serif" font-size="7" font-weight="800" fill="#d97706" text-anchor="middle">A-15</text>
+              <rect x="180" y="50" width="60" height="90" rx="4" fill="rgba(255,255,255,.5)" stroke="rgba(255,255,255,.8)" stroke-width="1.5"/>
+              <text x="210" y="100" font-family="Plus Jakarta Sans,sans-serif" font-size="10" font-weight="700" fill="rgba(0,0,0,.3)" text-anchor="middle">MOTOR</text>
+              <rect x="260" y="70" width="70" height="40" rx="4" fill="rgba(255,255,255,.4)" stroke="rgba(255,255,255,.6)" stroke-width="1"/>
+              <text x="295" y="94" font-family="Plus Jakarta Sans,sans-serif" font-size="9" font-weight="700" fill="rgba(0,0,0,.28)" text-anchor="middle">GERBANG</text>
+            </svg>
+            <!-- Pin -->
+            <div style="position:absolute;left:106px;top:20px;display:flex;flex-direction:column;align-items:center;z-index:5;">
+              <div style="position:absolute;width:50px;height:50px;border-radius:50%;background:rgba(239,68,68,.2);top:-5px;left:-11px;animation:timerPulse 1.5s infinite;"></div>
+              <div style="width:26px;height:26px;border-radius:50% 50% 50% 0;background:#ef4444;transform:rotate(-45deg);box-shadow:0 3px 10px rgba(239,68,68,.5);"></div>
+            </div>
+            <div style="position:absolute;bottom:8px;left:8px;background:white;border-radius:7px;padding:5px 9px;font-size:10px;font-weight:700;color:#d97706;box-shadow:0 1px 3px rgba(0,0,0,.1);">📍 Slot A-15</div>
+          </div>
+          <div class="card">
+            <div class="row" style="gap:12px;padding:14px 16px;">
+              <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="17.5" r="2.5"/><circle cx="5.5" cy="17.5" r="2.5"/></svg></div>
+              <div class="f1"><div style="font-size:13px;font-weight:700;color:#111827;letter-spacing:2px;">B 1234 XYZ</div><div style="font-size:11px;color:#b45309;">Slot A-15 · Zona A, Lantai 1</div></div>
+              <span class="badge badge-g">Ditemukan</span>
+            </div>
+          </div>
+          <div class="card">
+            <div style="padding:12px 16px 10px;font-size:12px;font-weight:700;color:#111827;">Petunjuk Arah</div>
+            <div class="sep"></div>
+            <div style="padding:12px 16px 14px;display:flex;flex-direction:column;gap:9px;">
+              <div class="row" style="gap:10px;"><div style="width:22px;height:22px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800;color:#d97706;">1</div><div style="font-size:12px;color:#6b7280;line-height:1.5;">Masuk dari Gerbang Utama, ambil kiri</div></div>
+              <div class="row" style="gap:10px;"><div style="width:22px;height:22px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800;color:#d97706;">2</div><div style="font-size:12px;color:#6b7280;line-height:1.5;">Lurus menuju Zona A (area mobil)</div></div>
+              <div class="row" style="gap:10px;"><div style="width:22px;height:22px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:800;color:#d97706;">3</div><div style="font-size:12px;color:#6b7280;line-height:1.5;">Slot A-15 ada di baris ke-3 dari kiri</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center;">
+              <div><div style="font-size:11px;color:#b45309;margin-bottom:3px;">Jarak</div><div style="font-size:22px;font-weight:800;color:#111827;">42m</div><div style="font-size:10px;color:#9ca3af;">dari posisi Anda</div></div>
+              <div><div style="font-size:11px;color:#b45309;margin-bottom:3px;">Estimasi</div><div style="font-size:22px;font-weight:800;color:#111827;">1 min</div><div style="font-size:10px;color:#9ca3af;">berjalan kaki</div></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="goTo('s-active')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            Navigasi ke Kendaraan
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end screens-container -->
+  </div><!-- end device -->
+
+  <!-- Flow navigation -->
+  <div class="flow-nav" id="flowNav">
+    <button class="flow-btn current" onclick="goTo('s-login')" data-screen="s-login">Login</button>
+    <button class="flow-btn" onclick="goTo('s-home')" data-screen="s-home">Home</button>
+    <button class="flow-btn" onclick="goTo('s-map')" data-screen="s-map">Denah</button>
+    <button class="flow-btn" onclick="goTo('s-booking')" data-screen="s-booking">Booking</button>
+    <button class="flow-btn" onclick="goTo('s-deposit')" data-screen="s-deposit">Deposit</button>
+    <button class="flow-btn" onclick="goTo('s-qr')" data-screen="s-qr">QR</button>
+    <button class="flow-btn" onclick="goTo('s-scan')" data-screen="s-scan">Scan</button>
+    <button class="flow-btn" onclick="goTo('s-active')" data-screen="s-active">Aktif</button>
+    <button class="flow-btn" onclick="goTo('s-payment')" data-screen="s-payment">Bayar</button>
+    <button class="flow-btn" onclick="goTo('s-success')" data-screen="s-success">Selesai</button>
+    <button class="flow-btn" onclick="goTo('s-find')" data-screen="s-find">Cari Mobil</button>
+  </div>
+
+</div><!-- end prototype-shell -->
+
+<script>
+const SCREENS = ['s-login','s-home','s-map','s-booking','s-deposit','s-qr','s-scan','s-active','s-payment','s-success','s-find'];
+const NAMES = ['01 · Login','02 · Home','03 · Denah Parkir','04 · Booking','05 · Bayar Deposit','06 · QR Booking','07 · Scan Gerbang','08 · Parkir Aktif','09 · Bayar Parkir','10 · Selesai','11 · Find Vehicle'];
+
+let current = 's-login';
+
+// Init dots
+const dotsEl = document.getElementById('dots');
+SCREENS.forEach((id, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.id = 'dot-' + i;
+  dotsEl.appendChild(d);
+});
+
+function goTo(targetId) {
+  if (targetId === current) return;
+  const from = document.getElementById(current);
+  const to = document.getElementById(targetId);
+  if (!from || !to) return;
+
+  from.classList.remove('active');
+  to.classList.add('active');
+  to.scrollTop = 0;
+
+  current = targetId;
+
+  // Update badge
+  const idx = SCREENS.indexOf(targetId);
+  document.getElementById('screenName').textContent = NAMES[idx] || targetId;
+
+  // Update dots
+  SCREENS.forEach((_, i) => {
+    const d = document.getElementById('dot-' + i);
+    if (d) d.className = 'dot' + (i === idx ? ' active' : '');
+  });
+
+  // Update flow nav
+  document.querySelectorAll('.flow-btn').forEach(b => {
+    b.classList.toggle('current', b.dataset.screen === targetId);
+  });
+
+  // Start timer on QR screen
+  if (targetId === 's-qr') startQRTimer();
+  // Start duration on active screen
+  if (targetId === 's-active') startDuration();
+}
+
+// Vehicle toggle
+let vehicle = 'car';
+function selectVehicle(type, el) {
+  vehicle = type;
+  const carBtn = document.getElementById('carBtn');
+  const motoBtn = document.getElementById('motoBtn');
+  if (type === 'car') {
+    carBtn.style.cssText = 'flex-direction:column;gap:6px;height:68px;background:#f59e0b;color:white;border-radius:12px;border:none;box-shadow:0 4px 12px rgba(245,158,11,.3);';
+    motoBtn.style.cssText = 'flex-direction:column;gap:6px;height:68px;background:transparent;color:#b45309;border-radius:12px;border:1.5px solid #fcd34d;';
+  } else {
+    motoBtn.style.cssText = 'flex-direction:column;gap:6px;height:68px;background:#f59e0b;color:white;border-radius:12px;border:none;box-shadow:0 4px 12px rgba(245,158,11,.3);';
+    carBtn.style.cssText = 'flex-direction:column;gap:6px;height:68px;background:transparent;color:#b45309;border-radius:12px;border:1.5px solid #fcd34d;';
+  }
+}
+
+// Pay method toggle
+function selectPay(el) {
+  document.querySelectorAll('.pm').forEach(p => {
+    p.classList.remove('sel');
+    const rd = p.querySelector('.rd');
+    if (rd) { rd.classList.remove('on'); rd.classList.remove('on'); }
+  });
+  el.classList.add('sel');
+  const rd = el.querySelector('.rd');
+  if (rd) rd.classList.add('on');
+}
+
+// QR timer countdown
+let timerInterval;
+function startQRTimer() {
+  clearInterval(timerInterval);
+  let secs = 272;
+  const display = document.getElementById('timerDisplay');
+  const bar = document.getElementById('timerBar');
+  timerInterval = setInterval(() => {
+    if (secs <= 0) { clearInterval(timerInterval); return; }
+    secs--;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    if (display) display.textContent = m + ':' + String(s).padStart(2, '0');
+    if (bar) bar.style.width = (secs / 300 * 100) + '%';
+  }, 1000);
+}
+
+// Duration counter
+let durationInterval;
+function startDuration() {
+  clearInterval(durationInterval);
+  let secs = 8134; // 02:15:34
+  const display = document.getElementById('durationDisplay');
+  durationInterval = setInterval(() => {
+    secs++;
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (display) display.textContent = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }, 1000);
+}
+</script>
+</body>
+</html>
